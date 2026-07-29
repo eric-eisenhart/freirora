@@ -43,7 +43,8 @@ echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1
 ### Packages
 ##############
 
-PACKAGES=(
+# A few things I want to be sure I don't get from Terra repos or definitely aren't in there
+PACKAGES_NOTERRA=(
     # I'd prefer non-flatpak browser so I can do 1password desktop integration easier
     firefox
 
@@ -51,15 +52,22 @@ PACKAGES=(
     1password
     1password-cli
 
-    # Shell / prompt
+    # Terminal
+    ghostty
+
+    # Programming stuff I find handy
+    code
+)
+
+PACKAGES=(
+    # Shell / prompt stuff
     fish
     fzf
+    plocate
     starship
-
-    # Terminals
-    # copr build bundles everything; ghostty-* subpackages are terra-only and conflict
-    ghostty
-    terminator
+    tealdeer
+    thefuck
+    zoxide
 
     # Editors
     joe
@@ -75,14 +83,19 @@ PACKAGES=(
     # /etc under version control
     etckeeper
 
-    # Programming stuff I find handy
-    code
+    # Programming stuff
+    bat
+    bat-extras
+    direnv
     gh
     git-filter-repo
     git-koji # terra
     git-lfs
     git-subtree
     jq
+    mise
+    mise-bash-completion
+    mise-fish-completion
     nodejs
     nodejs-npm
     perl-App-cpanminus
@@ -95,9 +108,19 @@ PACKAGES=(
     shfmt
     sqlite
     sqlite-tools
+    ugrep
     uv
     yamllint
     yq
+
+    # Containers
+    distrobox
+    podman
+    podman-docker
+    podman-compose
+    podman-tui
+    podlet
+    kontainer
 
     # Handy tools
     age
@@ -106,12 +129,9 @@ PACKAGES=(
     lazyssh # terra
     mtr
     netcat
-    plocate
     powertop
     rclone
     tailscale
-    thefuck
-    wiremix
 
     # Fonts
     bitstream-vera-fonts-all
@@ -173,7 +193,8 @@ var_dirs() {
 }
 var_dirs >/tmp/var-dirs-before
 
-dnf5 -y install --skip-unavailable --skip-broken "${PACKAGES[@]}"
+dnf5 -y install --skip-unavailable --skip-broken --disable-repo=terra "${PACKAGES_NOTERRA[@]}"
+dnf5 -y install --skip-unavailable --skip-broken                      "${PACKAGES[@]}"
 
 if [ -n "${usrlocal_target}" ]; then
     # Relocate launchers scriptlets dropped in /usr/local/bin (1password ships
