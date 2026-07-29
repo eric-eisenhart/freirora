@@ -116,7 +116,7 @@ PACKAGES=(
     # Containers
     distrobox
     podman
-    podman-docker
+    # podman-docker # conflicts with docker-ce; skip
     podman-compose
     podman-tui
     podlet
