@@ -10,6 +10,14 @@
 
   "packageRules": [
     {
+      // config:best-practices pulls in abandonments:recommended, which flags
+      // any dep with no release in 1 year as abandoned. Base images and
+      // GitHub Actions here move on their own cadence; 1 year is far too
+      // eager and just fills the dependency dashboard with noise.
+      "abandonmentThreshold": "5 years",
+      "matchPackageNames": ["*"],
+    },
+    {
       "automerge": true,
       "matchUpdateTypes": ["pin", "pinDigest"]
     },
