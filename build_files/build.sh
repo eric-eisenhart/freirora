@@ -35,6 +35,16 @@ dnf5 config-manager addrepo --id=mozilla \
     --set=gpgkey=https://packages.mozilla.org/rpm/firefox/signing-key.gpg \
     --set=gpgcheck=1 --set=repo_gpgcheck=0 --set=priority=10
 
+# https://code.claude.com/docs/en/setup#dnf
+sudo tee /etc/yum.repos.d/claude-code.repo <<'EOF'
+[claude-code]
+name=Claude Code
+baseurl=https://downloads.claude.ai/claude-code/rpm/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://downloads.claude.ai/keys/claude-code.asc
+EOF
+
 # https://support.1password.com/install-linux/#fedora-or-red-hat-enterprise-linux
 rpm --import https://downloads.1password.com/linux/keys/1password.asc
 echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" >/etc/yum.repos.d/1password.repo
@@ -57,6 +67,9 @@ PACKAGES_NOTERRA=(
 
     # Programming stuff I find handy
     code
+
+    # LLM
+    claude-code
 )
 
 PACKAGES=(
