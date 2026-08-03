@@ -305,3 +305,10 @@ done
 
 # Fail the build if any requested package didn't actually get installed
 verify_packages_installed "${PACKAGES[@]}"
+
+###################
+### Image branding
+###################
+
+# Last, after every dnf transaction: /usr/lib/os-release is rpm-owned.
+/ctx/image-info

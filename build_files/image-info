@@ -1,0 +1,32 @@
+#!/bin/bash
+# Freirora: cosmetic rebranding of os-release, after upstream aurora's
+# build_files/base/00-image-info.sh. ID, ID_LIKE, VARIANT_ID, CPE_NAME, LOGO,
+# IMAGE_ID and image-info.json keep their upstream values so anything keying
+# off them still works. Runs last in build.sh: /usr/lib/os-release is rpm-owned.
+
+set -ouex pipefail
+
+IMAGE_PRETTY_NAME="Freirora"
+UPSTREAM_PRETTY_NAME="Aurora"
+HOME_URL="https://github.com/eric-eisenhart/freirora"
+BUG_SUPPORT_URL="https://github.com/eric-eisenhart/freirora/issues"
+
+FEDORA_VERSION=$(rpm -E %fedora)
+
+# OS Release File. DOCUMENTATION_URL and SUPPORT_URL stay upstream.
+sed -i "s/^NAME=.*/NAME=\"$IMAGE_PRETTY_NAME\"/" /usr/lib/os-release
+sed -i "s/^PRETTY_NAME=.*/PRETTY_NAME=\"$IMAGE_PRETTY_NAME\"/" /usr/lib/os-release
+sed -i "s/^VARIANT=.*/VARIANT=\"$IMAGE_PRETTY_NAME (based on $UPSTREAM_PRETTY_NAME)\"/" /usr/lib/os-release
+sed -i "s/^DEFAULT_HOSTNAME=.*/DEFAULT_HOSTNAME=\"${IMAGE_PRETTY_NAME,}\"/" /usr/lib/os-release
+sed -i "s|^HOME_URL=.*|HOME_URL=\"$HOME_URL\"|" /usr/lib/os-release
+sed -i "s|^BUG_REPORT_URL=.*|BUG_REPORT_URL=\"$BUG_SUPPORT_URL\"|" /usr/lib/os-release
+# Swap the name, keep upstream's version suffix
+sed -i "s/^BOOTLOADER_NAME=\"$UPSTREAM_PRETTY_NAME/BOOTLOADER_NAME=\"$IMAGE_PRETTY_NAME/" /usr/lib/os-release
+
+# grub2-mkconfig takes its distributor from here
+echo "$IMAGE_PRETTY_NAME release $FEDORA_VERSION" >/etc/system-release
+
+# sed exits 0 when it matches nothing
+grep -q "^PRETTY_NAME=\"$IMAGE_PRETTY_NAME\"$" /usr/lib/os-release
+
+cat /usr/lib/os-release /etc/system-release
