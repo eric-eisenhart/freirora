@@ -36,7 +36,7 @@ dnf5 config-manager addrepo --id=mozilla \
     --set=gpgcheck=1 --set=repo_gpgcheck=0 --set=priority=10
 
 # https://code.claude.com/docs/en/setup#dnf
-sudo tee /etc/yum.repos.d/claude-code.repo <<'EOF'
+tee /etc/yum.repos.d/claude-code.repo <<'EOF'
 [claude-code]
 name=Claude Code
 baseurl=https://downloads.claude.ai/claude-code/rpm/stable
