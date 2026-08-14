@@ -288,9 +288,12 @@ rm -rf /var/tmp/.config /var/tmp/.cache /var/tmp/.local
 # sysusers.d, which `bootc container lint` flags. Record the GIDs that were
 # actually allocated so they stay stable across deploys.
 {
-    for grp in onepassword onepassword-mcp; do
-        gid=$(getent group "$grp" | cut -d: -f3)
-        [ -n "$gid" ] && echo "g $grp $gid -"
+    for grp in onepassword onepassword-cli onepassword-mcp; do
+        # `if` so a missing group is skipped: getent exits 2 and pipefail would
+        # otherwise abort the build
+        if gid=$(getent group "$grp" | cut -d: -f3) && [ -n "$gid" ]; then
+            echo "g $grp $gid -"
+        fi
     done
 } >/usr/lib/sysusers.d/freirora-1password.conf
 [ -s /usr/lib/sysusers.d/freirora-1password.conf ] ||
