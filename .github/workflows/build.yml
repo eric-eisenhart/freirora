@@ -195,7 +195,7 @@ jobs:
             echo "::warning::upstream digest unresolved; building against the floating :stable tag"
           fi
 
-          sudo -E $(command -v just) build \
+          just build \
             ${IMAGE_NAME} \
             ${DEFAULT_TAG}
 
@@ -203,7 +203,7 @@ jobs:
       - name: Rechunk with rpm-ostree
         id: rechunk
         run: |
-          sudo -E $(command -v just) ostree-rechunk \
+          just ostree-rechunk \
             ${IMAGE_NAME} \
             ${DEFAULT_TAG}
 
@@ -213,7 +213,7 @@ jobs:
       #- name: Rechunk with Chunkah
       #  id: rechunk
       #  run: |
-      #    sudo -E $(command -v just) rechunk \
+      #    just rechunk \
       #      ${IMAGE_NAME} \
       #      ${DEFAULT_TAG}
 
@@ -233,7 +233,7 @@ jobs:
         env:
           ALIAS_TAGS: ${{ steps.gen-build-tags.outputs.alias_tags }}
         run: |
-          sudo -E $(command -v just) tag-images \
+          just tag-images \
             "${IMAGE_NAME}" \
             "${DEFAULT_TAG}" \
             "${ALIAS_TAGS}"
@@ -256,7 +256,7 @@ jobs:
         run: |
           set -euox pipefail
           for tag in ${ALIAS_TAGS}; do
-            sudo -E podman push --digestfile=/tmp/digestfile ${IMAGE_NAME}:${tag} ${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}
+            podman push --digestfile=/tmp/digestfile ${IMAGE_NAME}:${tag} ${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}
           done
 
           digest=$(< /tmp/digestfile)
