@@ -285,14 +285,17 @@ rm -rf /var/tmp/.config /var/tmp/.cache /var/tmp/.local
 ####################
 
 # 1Password's scriptlets create these groups directly instead of shipping
-# sysusers.d, which `bootc container lint` flags. Record the GIDs that were
-# actually allocated so they stay stable across deploys.
+# sysusers.d, which `bootc container lint` flags. Declare the groups without
+# pinning a GID: the number the build container allocates is not the number a
+# real system has (builds land in the 1000+ range, where human users live), and
+# systemd-sysusers never renumbers a group that already exists -- so a recorded
+# GID is at best inert and at worst collides with a real user's group.
 {
     for grp in onepassword onepassword-cli onepassword-mcp; do
-        # `if` so a missing group is skipped: getent exits 2 and pipefail would
-        # otherwise abort the build
-        if gid=$(getent group "$grp" | cut -d: -f3) && [ -n "$gid" ]; then
-            echo "g $grp $gid -"
+        # `if` so a missing group is skipped: getent exits 2 and pipefail
+        # would otherwise abort the build
+        if getent group "$grp" >/dev/null; then
+            echo "g $grp -"
         fi
     done
 } >/usr/lib/sysusers.d/freirora-1password.conf
