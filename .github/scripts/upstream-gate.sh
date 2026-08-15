@@ -18,6 +18,8 @@
 #   LABEL_NS            label namespace,       e.g. io.github.freiheit.build
 #   MAX_AGE_HOURS       rebuild once the published image is older than this
 #   MIN_INTERVAL_HOURS  never rebuild while the published image is younger than this
+#   PKGS_NEWEST_EPOCH   newest build time among tracked packages (optional)
+#   PKGS_NEWEST_NAME    which package that was, for the reason string
 #   FORCE               "true" bypasses every content check below
 #   FORCE_REASON        human-readable explanation for FORCE
 #   HEAD_SHA            git commit being built
@@ -119,6 +121,7 @@ if [[ -z "${prev_base}" ]]; then
 fi
 
 age_hours="$(hours_since "${prev_created}")"
+prev_epoch_pkg="$(date -u -d "${prev_created}" +%s 2>/dev/null)" || prev_epoch_pkg=""
 if [[ -z "${age_hours}" ]]; then
     emit true "cannot parse published image timestamp '${prev_created}' (fail-open)" "${base_digest}"
 fi
@@ -145,6 +148,14 @@ fi
 
 if [[ -n "${HEAD_SHA}" && -n "${prev_sha}" && "${prev_sha}" != "${HEAD_SHA}" ]]; then
     emit true "source commit changed: ${prev_sha:0:7} -> ${HEAD_SHA:0:7}" "${base_digest}"
+fi
+
+# Vendor repos that move independently of the base image (see
+# tracked-packages.sh). Subject to MIN_INTERVAL_HOURS above, so a chatty
+# package cannot rebuild more often than the stream's floor allows.
+if [[ -n "${PKGS_NEWEST_EPOCH:-}" && -n "${prev_epoch_pkg:-}" ]] \
+    && ((PKGS_NEWEST_EPOCH > prev_epoch_pkg)); then
+    emit true "tracked package ${PKGS_NEWEST_NAME:-?} built $(date -u -d "@${PKGS_NEWEST_EPOCH}" +%Y-%m-%dT%H:%M:%SZ), newer than our ${prev_created}" "${base_digest}"
 fi
 
 if ((age_hours >= MAX_AGE_HOURS)); then

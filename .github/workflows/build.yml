@@ -67,6 +67,12 @@ jobs:
       # package repos (Firefox, 1Password, terra, COPRs) do not go stale.
       MAX_AGE_HOURS: "168"
       MIN_INTERVAL_HOURS: "0"
+      # Vendor repos that move independently of the base image. `code` is
+      # deliberately absent: aurora-dx ships its own vscode.repo and it is not
+      # confirmed which repo actually satisfies it here.
+      TRACKED: |
+        firefox     mozilla https://packages.mozilla.org/rpm/firefox
+        claude-code claude  https://downloads.claude.ai/claude-code/rpm/stable
       # Must match the second `schedule` cron above exactly; github.event.schedule
       # hands back the literal cron string.
       FORCE_CRON: "0 2 * * TUE"
@@ -106,6 +112,11 @@ jobs:
           # owner's casing.
           PUBLISHED_REF="${PUBLISHED_REF,,}"
           export PUBLISHED_REF
+
+          read -r PKGS_NEWEST_EPOCH PKGS_NEWEST_NAME < <(
+            .github/scripts/tracked-packages.sh) || true
+          export PKGS_NEWEST_EPOCH PKGS_NEWEST_NAME
+          echo "tracked packages: newest is ${PKGS_NEWEST_NAME:-none}"
 
           result="$(.github/scripts/upstream-gate.sh)"
           echo "gate: ${result}"
