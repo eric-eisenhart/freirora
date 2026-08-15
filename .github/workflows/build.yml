@@ -68,8 +68,10 @@ jobs:
       MAX_AGE_HOURS: "168"
       MIN_INTERVAL_HOURS: "0"
       # Vendor repos that move independently of the base image. `code` is
-      # deliberately absent: aurora-dx ships its own vscode.repo and it is not
-      # confirmed which repo actually satisfies it here.
+      # deliberately absent: aurora-dx already ships it (our dnf run reports
+      # "already installed"), so a new VS Code moves the base digest and the
+      # check above catches it. Only packages the base does not control need
+      # tracking here.
       TRACKED: |
         firefox     mozilla https://packages.mozilla.org/rpm/firefox
         claude-code claude  https://downloads.claude.ai/claude-code/rpm/stable
