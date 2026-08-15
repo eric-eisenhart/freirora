@@ -322,8 +322,10 @@ comm -13 /tmp/var-dirs-before /tmp/var-dirs-after | tac | while read -r d; do
     rm -rf "$d"
 done
 
-# Fail the build if any requested package didn't actually get installed
-verify_packages_installed "${PACKAGES[@]}"
+# Fail the build if any requested package didn't actually get installed.
+# Both lists: `--skip-unavailable` silently drops anything unresolvable, so
+# an unverified list is a list that can quietly go missing.
+verify_packages_installed "${PACKAGES_NOTERRA[@]}" "${PACKAGES[@]}"
 
 ###################
 ### Image branding
