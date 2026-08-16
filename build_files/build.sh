@@ -12,12 +12,35 @@ source /ctx/lib-verify.sh
 ### Repositories
 ##################
 
+# Terra publishes one repo per Fedora release and lags the bump on newer
+# bases. terra$releasever then has no mirrors: the bootstrap below fails
+# outright, and once past it --skip-unavailable drops every terra package
+# without failing. Pin to the previous release until the current one is
+# published; the check stops matching as soon as it is.
+# no pipe into grep -q: it exits on first match, and the resulting SIGPIPE
+# would trip pipefail even on success
+terra_release="$(rpm -E %fedora)"
+terra_metalink="$(curl -sfL \
+    "https://tetsudou.fyralabs.com/metalink?repo=terra${terra_release}&arch=$(uname -m)" || true)"
+terra_pin=""
+if ! grep -q '<url' <<<"${terra_metalink}"; then
+    terra_pin="$((terra_release - 1))"
+    echo "NOTE: terra${terra_release} has no mirrors; falling back to terra${terra_pin}"
+    terra_release="${terra_pin}"
+fi
+
 # Terra: nerd fonts, ms-core fonts, git-koji, lazyssh, ...
 # (aurora does not ship the terra repo, unlike bazzite)
 if [ ! -f /etc/yum.repos.d/terra.repo ]; then
     dnf5 -y install --nogpgcheck \
-        --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' \
+        --repofrompath "terra,https://repos.fyralabs.com/terra${terra_release}" \
         terra-release
+fi
+
+# terra-release's own repo files use $releasever; pin those too, or the
+# packages below come from the release we just established does not exist.
+if [ -n "${terra_pin}" ]; then
+    sed -i "s/[$]releasever/${terra_pin}/g" /etc/yum.repos.d/terra*.repo
 fi
 
 # Tailscale repo ships in the base image, but disabled
