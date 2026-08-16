@@ -20,15 +20,15 @@ source /ctx/lib-verify.sh
 # no pipe into grep -q: it exits on first match, and the resulting SIGPIPE
 # would trip pipefail even on success
 terra_release="$(rpm -E %fedora)"
-terra_metalink="$(curl -sL \
-    "https://tetsudou.fyralabs.com/metalink?repo=terra${terra_release}&arch=$(uname -m)" || true)"
+terra_origin="https://repos.fyralabs.com"
 terra_pin=""
-# An empty reply means the probe itself failed (no curl, no network), which is
-# not evidence the repo is gone -- leave $releasever alone and let the package
-# verification report the truth rather than silently pinning the wrong release.
-if [ -n "${terra_metalink}" ] && ! grep -q '<url' <<<"${terra_metalink}"; then
+# Only a definite 404 counts -- a network failure reports 000 and is left
+# alone, so a blip cannot silently pin the wrong release.
+terra_status="$(curl -sSo /dev/null -w '%{http_code}' \
+    "${terra_origin}/terra${terra_release}/repodata/repomd.xml" || true)"
+if [ "${terra_status}" = "404" ]; then
     terra_pin="$((terra_release - 1))"
-    echo "NOTE: terra${terra_release} has no mirrors; falling back to terra${terra_pin}"
+    echo "NOTE: terra${terra_release} is not published; falling back to terra${terra_pin}"
     terra_release="${terra_pin}"
 fi
 
@@ -39,6 +39,14 @@ if [ ! -f /etc/yum.repos.d/terra.repo ]; then
         --repofrompath "terra,https://repos.fyralabs.com/terra${terra_release}" \
         terra-release
 fi
+
+# Terra's metalink advertises a repomd checksum that its mirrors -- including
+# the fyralabs origin -- do not always have yet. dnf rejects every mirror
+# ("Usable URL not found"), the repo goes unusable, and --skip-unavailable then
+# drops every terra package without failing. Go straight to the origin: no
+# advertised hash, no mirror race. terra-release ships the baseurl commented
+# out next to each metalink.
+sed -i -e 's/^metalink=/#metalink=/' -e 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/terra*.repo
 
 # terra-release's own repo files use $releasever; pin those too, or the
 # packages below come from the release we just established does not exist.
