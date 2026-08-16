@@ -232,7 +232,9 @@ var_dirs() {
 }
 var_dirs >/tmp/var-dirs-before
 
-dnf5 -y install --skip-unavailable --skip-broken --disable-repo=terra "${PACKAGES_NOTERRA[@]}"
+# 'terra*', not 'terra': terra-release also ships terra-extras and terra-mesa,
+# which an exact-id match leaves enabled -- so this list was never terra-free.
+dnf5 -y install --skip-unavailable --skip-broken --disable-repo='terra*' "${PACKAGES_NOTERRA[@]}"
 dnf5 -y install --skip-unavailable --skip-broken                      "${PACKAGES[@]}"
 
 if [ -n "${usrlocal_target}" ]; then
