@@ -7,3 +7,6 @@ _build-*/**
 __pycache__
 *_chunkah_*
 *_rpm-ostree_*
+
+# scratch dumps from `gh run list --json`
+.gh-*.json
