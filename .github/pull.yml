@@ -1,0 +1,10 @@
+---
+# pull[bot] config. Without this file the app's default is to HARD RESET
+# main to upstream periodically, discarding every fork commit
+# (happened to freizzite 2026-08-18). mergeMethod "none" = open a PR,
+# never touch main.
+version: "1"
+rules:
+  - base: main
+    upstream: ublue-os:main
+    mergeMethod: none
