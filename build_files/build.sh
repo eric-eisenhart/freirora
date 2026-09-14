@@ -125,7 +125,6 @@ PACKAGES=(
     # (completions generated below; terra's chezmoi-*-completion subpackages
     # hard-pin an exact chezmoi version and hold it back from updates)
     chezmoi
-    keychain
 
     # /etc under version control
     etckeeper
