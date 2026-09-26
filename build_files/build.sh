@@ -139,6 +139,7 @@ PACKAGES=(
     git-lfs
     git-subtree
     jq
+    libffi-devel
     mise
     mise-bash-completion
     mise-fish-completion
@@ -149,6 +150,10 @@ PACKAGES=(
     perltidy
     pre-commit
     ripgrep
+    ruby-devel
+    rubygem-puppet-lint
+    rubygems
+    rubygems-devel
     ruff
     ShellCheck
     shfmt
