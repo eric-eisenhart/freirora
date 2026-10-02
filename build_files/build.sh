@@ -129,6 +129,10 @@ PACKAGES=(
     # /etc under version control
     etckeeper
 
+    # btrfs housekeeping; openvox-control profile::btrfs enables the timers
+    bees
+    btrfsmaintenance
+
     # Programming stuff
     bat
     bat-extras
