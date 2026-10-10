@@ -125,6 +125,7 @@ PACKAGES=(
     # (completions generated below; terra's chezmoi-*-completion subpackages
     # hard-pin an exact chezmoi version and hold it back from updates)
     chezmoi
+    keychain # 3.0.4-4+ gates /etc/profile.d/keychain.sh on ~/.keychainrc (rhbz#2529776)
 
     # /etc under version control
     etckeeper
