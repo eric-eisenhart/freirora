@@ -42,7 +42,7 @@ jobs:
   # cache, no state file and no extra secret to keep in sync.
   check:
     name: Check for upstream changes
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # Only run if not triggered by workflow_run, OR if workflow_run was successful
     if: >
       github.event_name != 'workflow_run' ||
