@@ -87,6 +87,11 @@ echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1
 ### Packages
 ##############
 
+# Packages to make sure we always have latest of
+UPDATE_PACKAGES=(
+    ca-certificates
+)
+
 # A few things I want to be sure I don't get from Terra repos or definitely aren't in there
 PACKAGES_NOTERRA=(
     # I'd prefer non-flatpak browser so I can do 1password desktop integration easier
@@ -249,10 +254,9 @@ var_dirs() {
 }
 var_dirs >/tmp/var-dirs-before
 
-# 'terra*', not 'terra': terra-release also ships terra-extras and terra-mesa,
-# which an exact-id match leaves enabled -- so this list was never terra-free.
+dnf5 -y upgrade --skip-unavailable --skip-broken                         "${UPDATE_PACKAGES[@]}"
 dnf5 -y install --skip-unavailable --skip-broken --disable-repo='terra*' "${PACKAGES_NOTERRA[@]}"
-dnf5 -y install --skip-unavailable --skip-broken                      "${PACKAGES[@]}"
+dnf5 -y install --skip-unavailable --skip-broken                         "${PACKAGES[@]}"
 
 if [ -n "${usrlocal_target}" ]; then
     # Relocate launchers scriptlets dropped in /usr/local/bin (1password ships
