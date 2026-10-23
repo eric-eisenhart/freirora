@@ -254,7 +254,7 @@ var_dirs() {
 }
 var_dirs >/tmp/var-dirs-before
 
-dnf5 -y upgrade --skip-unavailable --skip-broken                         "${UPDATE_PACKAGES[@]}"
+dnf5 -y upgrade --skip-unavailable                                       "${UPDATE_PACKAGES[@]}"
 dnf5 -y install --skip-unavailable --skip-broken --disable-repo='terra*' "${PACKAGES_NOTERRA[@]}"
 dnf5 -y install --skip-unavailable --skip-broken                         "${PACKAGES[@]}"
 
