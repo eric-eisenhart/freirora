@@ -26,7 +26,7 @@
       // Restrict automerge to trusted first-party action publishers.
       "automerge": true,
       "matchManagers": ["github-actions"],
-      "matchPackageNames": ["actions/*", "github/*"],
+      "matchPackageNames": ["actions/**", "github/**", "docker/**", "sigstore/**"],
       "matchUpdateTypes": ["minor", "patch", "digest"],
     },
     // This prevents the default demo image used in ublue-os/image-template
