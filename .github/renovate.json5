@@ -21,6 +21,14 @@
       "automerge": true,
       "matchUpdateTypes": ["pin", "pinDigest"]
     },
+    {
+      // Merges once required checks pass; majors still wait for a human.
+      // Restrict automerge to trusted first-party action publishers.
+      "automerge": true,
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["actions/**", "github/**", "docker/**", "sigstore/**"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+    },
     // This prevents the default demo image used in ublue-os/image-template
     // from being pinned as it serves no purpose there
     {
