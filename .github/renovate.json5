@@ -21,6 +21,12 @@
       "automerge": true,
       "matchUpdateTypes": ["pin", "pinDigest"]
     },
+    {
+      // Merges once required checks pass; majors still wait for a human.
+      "automerge": true,
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+    },
     // This prevents the default demo image used in ublue-os/image-template
     // from being pinned as it serves no purpose there
     {
