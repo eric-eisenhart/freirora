@@ -23,8 +23,10 @@
     },
     {
       // Merges once required checks pass; majors still wait for a human.
+      // Restrict automerge to trusted first-party action publishers.
       "automerge": true,
       "matchManagers": ["github-actions"],
+      "matchPackageNames": ["actions/*", "github/*"],
       "matchUpdateTypes": ["minor", "patch", "digest"],
     },
     // This prevents the default demo image used in ublue-os/image-template
