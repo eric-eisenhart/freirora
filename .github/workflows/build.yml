@@ -75,6 +75,7 @@ jobs:
       TRACKED: |
         firefox     mozilla https://packages.mozilla.org/rpm/firefox
         claude-code claude  https://downloads.claude.ai/claude-code/rpm/stable
+        ghostty     ghostty https://download.copr.fedorainfracloud.org/results/scottames/ghostty/fedora-$releasever-x86_64/
       # Must match the second `schedule` cron above exactly; github.event.schedule
       # hands back the literal cron string.
       FORCE_CRON: "0 2 * * TUE"
