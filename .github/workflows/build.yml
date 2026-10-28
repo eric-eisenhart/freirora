@@ -17,9 +17,9 @@ on:
     # been observed queueing 60-104 minutes late.
     - cron: "37 */6 * * *"
     # Unconditional rebuild, bypassing the gate entirely. Two jobs: it picks up
-    # floating build-time deps the gate cannot see (terra, COPRs, the Mozilla
-    # and 1Password repos, ~120 dnf packages), and it guarantees a build even
-    # if the gate logic itself breaks in the "always skip" direction.
+    # floating build-time deps the gate cannot see (untracked packages from
+    # terra and the vendor repos, ~120 dnf packages), and it guarantees a build
+    # even if the gate logic itself breaks in the "always skip" direction.
     # Must stay byte-identical to FORCE_CRON in the check job below.
     - cron: "0 2 * * TUE"
       timezone: "America/Los_Angeles"
@@ -76,6 +76,8 @@ jobs:
         firefox     mozilla https://packages.mozilla.org/rpm/firefox
         claude-code claude  https://downloads.claude.ai/claude-code/rpm/stable
         ghostty     ghostty https://download.copr.fedorainfracloud.org/results/scottames/ghostty/fedora-$releasever-x86_64/
+        1password     1password     https://downloads.1password.com/linux/rpm/stable/$basearch
+        1password-cli 1password-cli https://downloads.1password.com/linux/rpm/stable/$basearch
       # Must match the second `schedule` cron above exactly; github.event.schedule
       # hands back the literal cron string.
       FORCE_CRON: "0 2 * * TUE"
