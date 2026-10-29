@@ -51,7 +51,7 @@ repos:
       args: ["--indent=4"]
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.29.0
+    rev: v1.38.0
     hooks:
       - id: yamllint
         args: [--strict, '-d', "{rules: {line-length: {max: 180}}}"]
