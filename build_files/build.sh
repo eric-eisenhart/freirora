@@ -341,22 +341,41 @@ rm -rf /var/tmp/.config /var/tmp/.cache /var/tmp/.local
 ####################
 
 # 1Password's scriptlets create these groups directly instead of shipping
-# sysusers.d, which `bootc container lint` flags. Declare the groups without
-# pinning a GID: the number the build container allocates is not the number a
-# real system has (builds land in the 1000+ range, where human users live), and
-# systemd-sysusers never renumbers a group that already exists -- so a recorded
-# GID is at best inert and at worst collides with a real user's group.
-{
-    for grp in onepassword onepassword-cli onepassword-mcp; do
-        # `if` so a missing group is skipped: getent exits 2 and pipefail
-        # would otherwise abort the build
-        if getent group "$grp" >/dev/null; then
-            echo "g $grp -"
-        fi
-    done
-} >/usr/lib/sysusers.d/freirora-1password.conf
+# sysusers.d, which `bootc container lint` flags, and the build container
+# allocates them from the 1000+ range. The setgid helpers (BrowserSupport,
+# 1password-mcp, op) carry that numeric GID in the image, so on a real system
+# they land on a human's group. Setgid to your own group is no privilege
+# change, the kernel leaves AT_SECURE unset, and BrowserSupport aborts
+# ("running without libc's security"): the browser extension shows
+# "Connection problem". Pin the GIDs and re-own the files.
+# 900-902: system range (a setgid binary on a user-range GID would hand out
+# that user's group), clear of the base image (allocates downward from 999),
+# and the same numbers freizzite pins. Hosts whose /etc/group predates this
+# keep their old numbers (systemd-sysusers never renumbers), so each existing
+# host needs `groupmod -g` once to match.
+declare -A OP_GIDS=([onepassword]=900 [onepassword-mcp]=901 [onepassword-cli]=902)
+: >/usr/lib/sysusers.d/freirora-1password.conf
+for group in onepassword onepassword-mcp onepassword-cli; do
+    old_gid="$(getent group "${group}" | cut -d: -f3)" || continue
+    new_gid="${OP_GIDS[${group}]}"
+    if [ "${old_gid}" != "${new_gid}" ]; then
+        groupmod -g "${new_gid}" "${group}"
+        # chgrp clears setgid; put it back on files that had it
+        find /usr /opt -xdev -gid "${old_gid}" -print0 | while IFS= read -r -d '' f; do
+            mode="$(stat -c %a "${f}")"
+            chgrp -h "${new_gid}" "${f}"
+            [ -L "${f}" ] || chmod "${mode}" "${f}"
+        done
+    fi
+    echo "g ${group} ${new_gid}" >>/usr/lib/sysusers.d/freirora-1password.conf
+done
 [ -s /usr/lib/sysusers.d/freirora-1password.conf ] ||
     rm -f /usr/lib/sysusers.d/freirora-1password.conf
+for f in /opt/1Password/1Password-BrowserSupport /opt/1Password/1password-mcp /usr/bin/op; do
+    [ -e "${f}" ] || continue
+    stat -c '%a %G %n' "${f}"
+    [ "$(stat -c %a "${f}")" = 2755 ] || { echo "ERROR: ${f} lost setgid" >&2; exit 1; }
+done
 
 # dnf4 state (dragged in by etckeeper-dnf/dnf-plugins-core) and rpm-state are
 # build artifacts. Drop them before the /var snapshot so we don't bother
