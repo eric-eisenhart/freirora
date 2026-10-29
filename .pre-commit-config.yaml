@@ -32,7 +32,7 @@ repos:
   # Linter for markdown
   # Requires: sudo apt install npm
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.44.0
+    rev: v0.50.0
     hooks:
       - id: markdownlint-fix
 
