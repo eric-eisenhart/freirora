@@ -179,20 +179,20 @@ jobs:
         run: |
           IMAGE_NAME=$(just image_name)
 
-          echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${IMAGE_NAME}" >> "${GITHUB_ENV}"
 
       - name: Default Tag
         id: gen-default-tag
         run: |
           DEFAULT_TAG=$(just generate-default-tag)
 
-          echo "DEFAULT_TAG=${DEFAULT_TAG}" >> $GITHUB_ENV
+          echo "DEFAULT_TAG=${DEFAULT_TAG}" >> "${GITHUB_ENV}"
 
       - name: Prepare environment
         run: |
           # Lowercase the image uri https://github.com/macbre/push-to-ghcr/issues/12
-          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
-          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
+          echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> "${GITHUB_ENV}"
+          echo "IMAGE_NAME=${IMAGE_NAME,,}" >> "${GITHUB_ENV}"
 
       # This actually builds the container image
       - name: Build Image
@@ -216,8 +216,8 @@ jobs:
           fi
 
           just build \
-            ${IMAGE_NAME} \
-            ${DEFAULT_TAG}
+            "${IMAGE_NAME}" \
+            "${DEFAULT_TAG}"
 
       # This is optional, this provides smaller delta updates
       # Freirora: chunkah, not ostree-rechunk. build-chunked-oci --rootfs drops
@@ -228,19 +228,19 @@ jobs:
         timeout-minutes: 70
         run: |
           just rechunk \
-            ${IMAGE_NAME} \
-            ${DEFAULT_TAG}
+            "${IMAGE_NAME}" \
+            "${DEFAULT_TAG}"
 
       - name: Generate Build Tags
         id: gen-build-tags
         run: |
           alias_tags="$(just generate-build-tags \
-                        ${IMAGE_NAME} \
-                        ${DEFAULT_TAG})"
+                        "${IMAGE_NAME}" \
+                        "${DEFAULT_TAG}")"
 
           echo "Tags for this Action..."
           echo "${alias_tags}"
-          echo "alias_tags=${alias_tags}" >> $GITHUB_OUTPUT
+          echo "alias_tags=${alias_tags}" >> "${GITHUB_OUTPUT}"
 
       - name: Tag Image
         id: tag-images
@@ -273,7 +273,7 @@ jobs:
           for tag in ${ALIAS_TAGS}; do
             # retry transient GHCR errors (e.g. 504 mid-push)
             for attempt in 1 2 3; do
-              if podman push --digestfile=/tmp/digestfile ${IMAGE_NAME}:${tag} ${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}; then
+              if podman push --digestfile=/tmp/digestfile "${IMAGE_NAME}:${tag}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}"; then
                 break
               elif [[ "${attempt}" -lt 3 ]]; then
                 echo "Push of ${tag} failed (attempt ${attempt}); retrying in 30s..." >&2
@@ -286,7 +286,7 @@ jobs:
 
           digest=$(< /tmp/digestfile)
 
-          echo "digest=${digest}" >> $GITHUB_OUTPUT
+          echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
 
       # This section is optional and only needs to be enabled if you plan on distributing
       # your project for others to consume. You will need to create a public and private key
@@ -310,4 +310,4 @@ jobs:
           # https://github.com/containers/container-libs/issues/388
           # https://github.com/coreos/rpm-ostree/issues/5509
           # use old bundle format, so we can use newer cosign 3.X.X instead of 2.X.X
-          cosign sign -y --new-bundle-format=false --use-signing-config=false --key env://COSIGN_PRIVATE_KEY ${IMAGE_REGISTRY}/${IMAGE_NAME}@${DIGEST}
+          cosign sign -y --new-bundle-format=false --use-signing-config=false --key env://COSIGN_PRIVATE_KEY "${IMAGE_REGISTRY}/${IMAGE_NAME}@${DIGEST}"

@@ -289,6 +289,7 @@ if [ -n "${usrlocal_target}" ]; then
     find /usr/local -mindepth 1 -not -type d | while read -r f; do
         echo "WARNING: discarding unexpected /usr/local content: $f" >&2
     done
+    # shellcheck disable=SC2114 # replaced by a symlink on the next line
     rm -rf /usr/local
     ln -s "${usrlocal_target}" /usr/local
 fi

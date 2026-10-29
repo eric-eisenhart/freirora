@@ -40,9 +40,11 @@ repos:
     rev: v0.10.0.1
     hooks:
     - id: shellcheck
-      # For legacy projects, optionally uncomment 1 of these:
-      # args: ["--severity=warning"]
-      args: ["--severity=error"]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+    - id: actionlint
 
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.11.0-1
