@@ -8,6 +8,13 @@ cp -avf "/ctx/system_files"/. /
 # shellcheck source=/dev/null
 source /ctx/lib-verify.sh
 
+# Port of freizzite 2073c22: lock qt6/plasma at the base image's versions so
+# our own dnf installs can't drift qt6-qtbase past the Plasma/KF6 builds linked
+# against its private ABI (Qt_6.11_PRIVATE_API symbol node -- the 2026-09-03
+# black-screen breaker). RPM deps don't catch this: the
+# qt6-qtbase-private-abi provide is identical across same-version rebuilds.
+dnf5 versionlock add 'qt6-*' 'plasma-*'
+
 ##################
 ### Repositories
 ##################
@@ -376,6 +383,28 @@ done
 # Both lists: `--skip-unavailable` silently drops anything unresolvable, so
 # an unverified list is a list that can quietly go missing.
 verify_packages_installed "${PACKAGES_NOTERRA[@]}" "${PACKAGES[@]}"
+
+# Everything below is dlopen'd or exec'd only at login time, so a broken ABI
+# ships green and fails on the user's monitor. `verify_libs_resolve` fails on a
+# missing path, so a rename shows up as a red build, not a skipped check.
+# shortcut: no login-manager binaries (SDDM vs plasma-login-manager on aurora
+# unconfirmed), add them once checked against the base image.
+LINK_CHECK=(
+    # Wallpaper plugin: what broke on 2026-09-03 (greeter never drew).
+    /usr/lib64/qt6/qml/org/kde/plasma/wallpapers/image/libplasma_wallpaper_image.so
+    /usr/libexec/kscreenlocker_greet
+    /usr/bin/kwin_wayland
+    /usr/bin/startplasma-wayland
+    /usr/bin/plasmashell
+    /usr/bin/ksmserver
+    /usr/bin/kded6
+    /usr/lib64/qt6/qml/org/kde/plasma/core/libcorebindingsplugin.so
+    /usr/lib64/qt6/qml/org/kde/plasma/plasmoid/libplasmoidplugin.so
+    /usr/lib64/qt6/qml/org/kde/kirigami/libKirigamiplugin.so
+    /usr/bin/systemsettings
+    /usr/bin/dolphin
+)
+verify_libs_resolve "${LINK_CHECK[@]}"
 
 ###################
 ### Image branding

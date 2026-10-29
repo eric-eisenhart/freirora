@@ -17,9 +17,9 @@ on:
     # been observed queueing 60-104 minutes late.
     - cron: "37 */6 * * *"
     # Unconditional rebuild, bypassing the gate entirely. Two jobs: it picks up
-    # floating build-time deps the gate cannot see (terra, COPRs, the Mozilla
-    # and 1Password repos, ~120 dnf packages), and it guarantees a build even
-    # if the gate logic itself breaks in the "always skip" direction.
+    # floating build-time deps the gate cannot see (untracked packages from
+    # terra and the vendor repos, ~120 dnf packages), and it guarantees a build
+    # even if the gate logic itself breaks in the "always skip" direction.
     # Must stay byte-identical to FORCE_CRON in the check job below.
     - cron: "0 2 * * TUE"
       timezone: "America/Los_Angeles"
@@ -76,6 +76,8 @@ jobs:
         firefox     mozilla https://packages.mozilla.org/rpm/firefox
         claude-code claude  https://downloads.claude.ai/claude-code/rpm/stable
         ghostty     ghostty https://download.copr.fedorainfracloud.org/results/scottames/ghostty/fedora-$releasever-x86_64/
+        1password     1password     https://downloads.1password.com/linux/rpm/stable/$basearch
+        1password-cli 1password-cli https://downloads.1password.com/linux/rpm/stable/$basearch
       # Must match the second `schedule` cron above exactly; github.event.schedule
       # hands back the literal cron string.
       FORCE_CRON: "0 2 * * TUE"
@@ -140,6 +142,8 @@ jobs:
   build_push:
     name: Build and push image
     runs-on: ubuntu-26.04
+    # Outer backstop, deliberately below the sum of the per-step timeouts.
+    timeout-minutes: 120
     needs: check
     if: needs.check.outputs.should_build == 'true'
 
@@ -159,6 +163,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Maximize build space
+        timeout-minutes: 10
         uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6
 
       - name: Install just
@@ -191,6 +196,7 @@ jobs:
 
       # This actually builds the container image
       - name: Build Image
+        timeout-minutes: 60
         id: build-image
         run: |
           set -euo pipefail
@@ -215,6 +221,7 @@ jobs:
 
       # This is optional, this provides smaller delta updates
       - name: Rechunk with rpm-ostree
+        timeout-minutes: 70
         id: rechunk
         run: |
           just ostree-rechunk \
@@ -263,6 +270,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push To GHCR
+        timeout-minutes: 20
         if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
         id: push-image
         env:
@@ -270,7 +278,17 @@ jobs:
         run: |
           set -euox pipefail
           for tag in ${ALIAS_TAGS}; do
-            podman push --digestfile=/tmp/digestfile "${IMAGE_NAME}:${tag}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}"
+            # retry transient GHCR errors (e.g. 504 mid-push)
+            for attempt in 1 2 3; do
+              if podman push --digestfile=/tmp/digestfile "${IMAGE_NAME}:${tag}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}"; then
+                break
+              elif [[ "${attempt}" -lt 3 ]]; then
+                echo "Push of ${tag} failed (attempt ${attempt}); retrying in 30s..." >&2
+                sleep 30
+              else
+                exit 1
+              fi
+            done
           done
 
           digest=$(< /tmp/digestfile)
