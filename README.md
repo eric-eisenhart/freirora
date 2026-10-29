@@ -2,7 +2,6 @@
 
 [![Build container image](https://github.com/eric-eisenhart/freirora/actions/workflows/build.yml/badge.svg)](https://github.com/eric-eisenhart/freirora/actions/workflows/build.yml)
 [![pre-commit](https://github.com/eric-eisenhart/freirora/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/eric-eisenhart/freirora/actions/workflows/pre-commit.yml)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/freirora)](https://artifacthub.io/packages/container/freirora/freirora)
 
 This is a freiheit clone of
 [aurora-dx](https://github.com/ublue-os/aurora)
