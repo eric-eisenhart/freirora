@@ -19,9 +19,9 @@ on:
     branches:
       - main
     paths:
-      - './disk_config/disk.toml'
-      - './disk_config/iso.toml'
-      - './.github/workflows/build-disk.yml'
+      - 'disk_config/disk.toml'
+      - 'disk_config/iso-kde.toml'
+      - '.github/workflows/build-disk.yml'
 
 env:
   IMAGE_NAME: ${{ github.event.repository.name }} # output of build.yml, keep in sync
@@ -36,7 +36,8 @@ concurrency:
 jobs:
   build:
     name: Build disk images
-    runs-on: ${{ inputs.platform == 'amd64' && 'ubuntu-26.04' || 'ubuntu-26.04-arm' }}
+    # osbuild mounts fail with EACCES inside bootc-image-builder on 26.04 runners; last green was 24.04
+    runs-on: ${{ inputs.platform == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +85,7 @@ jobs:
         uses: osbuild/bootc-image-builder-action@028e4d28330efe546229eb9cb52aee78174d2347 # main
         with:
           builder-image: ${{ env.BIB_IMAGE }}
-          config-file: ${{ matrix.disk-type == 'anaconda-iso' && './disk_config/iso.toml' || './disk_config/disk.toml' }}
+          config-file: ${{ matrix.disk-type == 'anaconda-iso' && './disk_config/iso-kde.toml' || './disk_config/disk.toml' }}
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: ${{ matrix.disk-type }}
