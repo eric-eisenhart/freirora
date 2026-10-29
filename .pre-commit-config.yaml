@@ -2,7 +2,7 @@
 repos:
   # Misc checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files # Require LFS for files over 500kB
       - id: check-executables-have-shebangs # Make sure scripts have ok #! lines
