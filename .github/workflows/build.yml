@@ -78,6 +78,7 @@ jobs:
         ghostty     ghostty https://download.copr.fedorainfracloud.org/results/scottames/ghostty/fedora-$releasever-x86_64/
         1password     1password     https://downloads.1password.com/linux/rpm/stable/$basearch
         1password-cli 1password-cli https://downloads.1password.com/linux/rpm/stable/$basearch
+        claude-desktop-unofficial claude-desktop https://pkg.claude-desktop-debian.dev/rpm/$basearch
       # Must match the second `schedule` cron above exactly; github.event.schedule
       # hands back the literal cron string.
       FORCE_CRON: "0 2 * * TUE"

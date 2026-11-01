@@ -86,6 +86,17 @@ gpgcheck=1
 gpgkey=https://downloads.claude.ai/keys/claude-code.asc
 EOF
 
+# https://github.com/aaddrick/claude-desktop-debian#using-dnf-repository-fedorarhel---recommended
+tee /etc/yum.repos.d/claude-desktop-unofficial.repo <<'EOF'
+[claude-desktop-unofficial]
+name=Claude Desktop (unofficial packaging)
+baseurl=https://pkg.claude-desktop-debian.dev/rpm/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://pkg.claude-desktop-debian.dev/KEY.gpg
+EOF
+
 # https://support.1password.com/install-linux/#fedora-or-red-hat-enterprise-linux
 rpm --import https://downloads.1password.com/linux/keys/1password.asc
 echo -e "[1password]\nname=1Password Stable Channel\nbaseurl=https://downloads.1password.com/linux/rpm/stable/\$basearch\nenabled=1\ngpgcheck=1\nrepo_gpgcheck=1\ngpgkey=\"https://downloads.1password.com/linux/keys/1password.asc\"" >/etc/yum.repos.d/1password.repo
@@ -116,6 +127,7 @@ PACKAGES_NOTERRA=(
 
     # LLM
     claude-code
+    claude-desktop-unofficial
 )
 
 PACKAGES=(
