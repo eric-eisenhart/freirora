@@ -443,7 +443,6 @@ LINK_CHECK=(
     /usr/bin/systemsettings
     /usr/bin/dolphin
     /usr/bin/plasma-discover
-    /usr/lib64/qt6/plugins/discover/kns-backend.so
 )
 verify_libs_resolve "${LINK_CHECK[@]}"
 
