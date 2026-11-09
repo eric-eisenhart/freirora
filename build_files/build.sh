@@ -128,6 +128,13 @@ PACKAGES_NOTERRA=(
     # LLM
     claude-code
     claude-desktop-unofficial
+
+    # Discover, for KDE Store add-on updates only (discover-kns-update.timer).
+    # No flatpak/rpm-ostree/packagekit backends: Bazaar, bootc and Puppet own
+    # those. The notifier is skipped too: kns has no notifier plugin, so
+    # Discover's own "update automatically" never fires for add-ons.
+    plasma-discover
+    plasma-discover-kns
 )
 
 PACKAGES=(
@@ -323,6 +330,7 @@ SYSTEMCTL=(
 )
 
 systemctl enable "${SYSTEMCTL[@]}"
+systemctl --global enable discover-kns-update.timer
 
 #######################
 ### Shell completions
@@ -434,6 +442,7 @@ LINK_CHECK=(
     /usr/lib64/qt6/qml/org/kde/kirigami/libKirigamiplugin.so
     /usr/bin/systemsettings
     /usr/bin/dolphin
+    /usr/bin/plasma-discover
 )
 verify_libs_resolve "${LINK_CHECK[@]}"
 
