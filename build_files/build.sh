@@ -159,7 +159,6 @@ PACKAGES=(
     fzf
     plocate
     starship
-    tealdeer
     thefuck
     zoxide
 
@@ -208,7 +207,6 @@ PACKAGES=(
     rubygems-devel
     ruff
     ShellCheck
-    shfmt
     sqlite
     sqlite-tools
     ugrep
@@ -274,6 +272,13 @@ PACKAGES=(
     zstd
 )
 
+# Installed the same way but not verified: Fedora's shfmt and tealdeer are
+# missing from F45.
+PACKAGES_OPTIONAL=(
+    shfmt
+    tealdeer
+)
+
 # 1Password's %post does a bare `mkdir /usr/local`, which fails on ostree
 # images where /usr/local is a symlink to /var/usrlocal (and dnf5 fails the
 # whole transaction on %post errors). Swap in a real directory for the
@@ -298,7 +303,7 @@ var_dirs >/tmp/var-dirs-before
 
 dnf5 -y upgrade --skip-unavailable                                       "${UPDATE_PACKAGES[@]}"
 dnf5 -y install --skip-unavailable --skip-broken --disable-repo='terra*' "${PACKAGES_NOTERRA[@]}"
-dnf5 -y install --skip-unavailable --skip-broken                         "${PACKAGES[@]}"
+dnf5 -y install --skip-unavailable --skip-broken                         "${PACKAGES[@]}" "${PACKAGES_OPTIONAL[@]}"
 
 if [ -n "${usrlocal_target}" ]; then
     # Relocate launchers scriptlets dropped in /usr/local/bin (1password ships
