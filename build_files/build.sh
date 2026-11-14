@@ -40,11 +40,25 @@ if [ "${terra_status}" = "404" ]; then
 fi
 
 # Terra: nerd fonts, ms-core fonts, git-koji, lazyssh, ...
-# (aurora does not ship the terra repo, unlike bazzite)
-if [ ! -f /etc/yum.repos.d/terra.repo ]; then
+# Fedora 45 moved repo files from /etc/yum.repos.d to /usr/share/dnf5/repos.d;
+# look in both. aurora F45 ships terra.repo there, disabled; older aurora
+# shipped none, so bootstrap terra-release only when neither has one.
+find_terra_repos() {
+    shopt -s nullglob
+    terra_repos=(/etc/yum.repos.d/terra*.repo /usr/share/dnf5/repos.d/terra*.repo)
+    shopt -u nullglob
+}
+find_terra_repos
+if [ "${#terra_repos[@]}" -eq 0 ]; then
     dnf5 -y install --nogpgcheck \
         --repofrompath "terra,https://repos.fyralabs.com/terra${terra_release}" \
         terra-release
+    find_terra_repos
+fi
+# --skip-unavailable would otherwise drop every terra package silently
+if [ "${#terra_repos[@]}" -eq 0 ]; then
+    echo "ERROR: no terra repo files found" >&2
+    exit 1
 fi
 
 # Terra's metalink advertises a repomd checksum that its mirrors -- including
@@ -53,13 +67,15 @@ fi
 # drops every terra package without failing. Go straight to the origin: no
 # advertised hash, no mirror race. terra-release ships the baseurl commented
 # out next to each metalink.
-sed -i -e 's/^metalink=/#metalink=/' -e 's/^#baseurl=/baseurl=/' /etc/yum.repos.d/terra*.repo
+sed -i -e 's/^metalink=/#metalink=/' -e 's/^#baseurl=/baseurl=/' "${terra_repos[@]}"
 
 # terra-release's own repo files use $releasever; pin those too, or the
 # packages below come from the release we just established does not exist.
 if [ -n "${terra_pin}" ]; then
-    sed -i "s/[$]releasever/${terra_pin}/g" /etc/yum.repos.d/terra*.repo
+    sed -i "s/[$]releasever/${terra_pin}/g" "${terra_repos[@]}"
 fi
+
+dnf5 config-manager setopt terra.enabled=true
 
 # Tailscale repo ships in the base image, but disabled
 dnf5 config-manager setopt tailscale-stable.enabled=true
