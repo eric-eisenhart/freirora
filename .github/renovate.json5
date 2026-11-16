@@ -1,56 +1,77 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
-    ":enablePreCommit",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    ':enablePreCommit',
   ],
-
-  "rebaseWhen": "auto",
-
-  "dependencyDashboardAutoclose": true,
-
-  "packageRules": [
+  rebaseWhen: 'auto',
+  dependencyDashboard: {
+    autoclose: true,
+  },
+  packageRules: [
     {
-      // config:best-practices pulls in abandonments:recommended, which flags
-      // any dep with no release in 1 year as abandoned. Base images and
-      // GitHub Actions here move on their own cadence; 1 year is far too
-      // eager and just fills the dependency dashboard with noise.
-      "abandonmentThreshold": "5 years",
-      "matchPackageNames": ["*"],
+      abandonmentThreshold: '5 years',
+      matchPackageNames: [
+        '*',
+      ],
     },
     {
-      "automerge": true,
-      "matchUpdateTypes": ["pin", "pinDigest"]
+      automerge: true,
+      matchUpdateTypes: [
+        'pin',
+        'pinDigest',
+      ],
     },
     {
-      // Merges once required checks pass; majors still wait for a human.
-      // Restrict automerge to trusted first-party action publishers.
-      "automerge": true,
-      "matchManagers": ["github-actions"],
-      "matchPackageNames": ["actions/**", "github/**", "docker/**", "sigstore/**"],
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-    },
-    // This prevents the default demo image used in ublue-os/image-template
-    // from being pinned as it serves no purpose there
-    {
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/ublue-os/bazzite"],
-      "pinDigests": false
-    },
-    {
-      "enabled": false,
-      "matchUpdateTypes": ["digest", "pinDigest", "pin"],
-      "matchDepTypes": ["container"],
-      "matchFileNames": [".github/workflows/**.yaml", ".github/workflows/**.yml"],
+      automerge: true,
+      matchManagers: [
+        'github-actions',
+      ],
+      matchPackageNames: [
+        'actions/**',
+        'github/**',
+        'docker/**',
+        'sigstore/**',
+      ],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+        'digest',
+      ],
     },
     {
-      // The build gate resolves and pins the base image digest at build time,
-      // so a Renovate-managed digest on the Containerfile ARG would only ever
-      // be a local-dev default -- and would open a PR on every upstream move,
-      // duplicating what the gate already does.
-      "enabled": false,
-      "matchUpdateTypes": ["digest", "pinDigest"],
-      "matchFileNames": ["Containerfile"],
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'ghcr.io/ublue-os/bazzite',
+      ],
+      pinDigests: false,
     },
-  ]
+    {
+      enabled: false,
+      matchUpdateTypes: [
+        'digest',
+        'pinDigest',
+        'pin',
+      ],
+      matchDepTypes: [
+        'container',
+      ],
+      matchFileNames: [
+        '.github/workflows/**.yaml',
+        '.github/workflows/**.yml',
+      ],
+    },
+    {
+      enabled: false,
+      matchUpdateTypes: [
+        'digest',
+        'pinDigest',
+      ],
+      matchFileNames: [
+        'Containerfile',
+      ],
+    },
+  ],
 }
